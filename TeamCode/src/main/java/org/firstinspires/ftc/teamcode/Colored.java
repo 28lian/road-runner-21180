@@ -94,5 +94,10 @@ public final class Colored {
     public String GetDiagnostics() {
         LLStatus diags = new LLStatus();
         return diags.toString();
-    };
+    }
+
+    public int returnPipeline() {
+        LLResult result = limelight.getLatestResult();
+        return result.getPipelineIndex();
+    }
 }

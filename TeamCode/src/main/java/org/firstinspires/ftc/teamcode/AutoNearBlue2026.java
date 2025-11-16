@@ -64,6 +64,7 @@ public class AutoNearBlue2026 extends LinearOpMode {
                 detectedPattern = patternDetector.returnId(false);
                 Logging.log("pattern  = %f", detectedPattern);
                 telemetry.addData("limelight", "Detected Pattern = %f", detectedPattern);
+                telemetry.addData("limelight", "Used pipeline %d", patternDetector.returnPipeline());
                 telemetry.update();
                 sleep(1);
             }
