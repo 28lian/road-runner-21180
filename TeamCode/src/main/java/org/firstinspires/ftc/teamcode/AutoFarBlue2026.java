@@ -46,8 +46,6 @@ public class AutoFarBlue2026 extends LinearOpMode {
         drive = new MecanumDrive(hardwareMap, startPose);
         motors.triggerClose();
 
-
-
         waitForStart();
         if (opModeIsActive()) {
             run_auto();

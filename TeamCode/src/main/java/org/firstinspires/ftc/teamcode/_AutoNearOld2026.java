@@ -178,9 +178,10 @@ public class _AutoNearOld2026 extends LinearOpMode {
 
     private class limeLightCamera implements Action {
         @Override
+        // initialized limelight to detect pattern
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             for (int i = 0; i < 30; i++) { // up to ~0.3s
-                detectedPattern = patternDetector.returnId();
+                detectedPattern = patternDetector.returnId(false);
                 Logging.log("pattern  = %f", detectedPattern);
                 telemetry.addData("line light","Detected Pattern = %f", detectedPattern);
                 telemetry.update();
@@ -209,19 +210,6 @@ public class _AutoNearOld2026 extends LinearOpMode {
             motors.startIntake();
             return false;
         }
-    }
-
-    public void detectAprilTeg() {
-        for (int i = 0; i < 30; i++) { // up to ~0.3s
-            Logging.log("pattern  = %f", detectedPattern);
-            detectedPattern = patternDetector.returnId();
-            if ((detectedPattern > 20) && (detectedPattern < 24)) {
-                return;
-            }
-            sleep(1);
-        }
-        detectedPattern = 21;
-        return;
     }
 
     private void updateProfileAccel(boolean slowMode) {

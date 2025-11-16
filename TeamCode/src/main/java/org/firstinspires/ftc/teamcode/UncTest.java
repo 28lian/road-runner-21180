@@ -41,7 +41,7 @@ public class UncTest extends LinearOpMode {
             // Try a few times to get a valid color reading
             double detectedColor = 0;
             for (int i = 0; i < 30 && opModeIsActive(); i++) { // up to ~0.3s
-                detectedColor = patternDetector.returnId();
+                detectedColor = patternDetector.returnId(false);
                 telemetry.addData("Detected Color", detectedColor);
                 telemetry.update();
                 if (detectedColor != 0) break;

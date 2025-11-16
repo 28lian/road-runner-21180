@@ -187,12 +187,20 @@ public class Teleop2026 extends LinearOpMode {
             }
 
             // TODO : not implemented correctly yet
-            if (gpButtons.autoLaunchPos) {
-//                Actions.runBlocking(
-//                        drive.actionBuilder(drive.localizer.getPose())
-//                                .strafeToLinearHeading(shootPos, shootHeading)
-//                                .build()
-//                );
+            if(gpButtons.autoLaunchPos) {
+                // move angle to launch using limelight return position (which returns degrees x and degrees y of the pattern)
+                // telemetry
+                double[] patternPos = patternDetector.returnPosition();
+                if (patternPos.length >= 2) {
+                    double angleToTurn = Math.atan2(patternPos[0], patternPos[1]);
+                    telemetry.addData("Pattern ", "X: %.1f Y: %.1f Angle: %.1f", patternPos[0], patternPos[1], Math.toDegrees(angleToTurn));
+                    telemetry.update();
+                    Actions.runBlocking(
+                            drive.actionBuilder(drive.localizer.getPose())
+                                    .turnTo(angleToTurn)
+                                    .build()
+                    );
+                }
             }
 
             telemetry.update();
@@ -207,14 +215,14 @@ public class Teleop2026 extends LinearOpMode {
 
                 telemetry.addData("heading", " %.3f", Math.toDegrees(drive.localizer.getPose().heading.log()));
                 telemetry.addData("location", " %s", drive.localizer.getPose().position.toString());
-                // return angle of detected pattern if any
-                double[] patternPos = patternDetector.returnPosition();
-                // use the coordinates of the april tag to detect how much the robot need to turn
-                if (patternPos.length >= 2) {
-                    telemetry.addData("Pattern ", "X: %.1f Y: %.1f Angle: %.1f", patternPos[0], patternPos[1], Math.toDegrees(Math.atan2(patternPos[0], patternPos[1])));
-                } else {
-                    telemetry.addData("Pattern ", "not detected");
-                }
+//                // return angle of detected pattern if any
+//                double[] patternPos = patternDetector.returnPosition();
+//                // use the coordinates of the april tag to detect how much the robot need to turn
+//                if (patternPos.length >= 2) {
+//                    telemetry.addData("Pattern ", "X: %.1f Y: %.1f Angle: %.1f", patternPos[0], patternPos[1], Math.toDegrees(Math.atan2(patternPos[0], patternPos[1])));
+//                } else {
+//                    telemetry.addData("Pattern ", "not detected");
+//                }
                 telemetry.addData(" --- ", " --- ");
                 telemetry.update(); // update message at the end of while loop
 

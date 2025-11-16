@@ -59,16 +59,16 @@ public class AutoNearBlue2026 extends LinearOpMode {
         // init position of trigger
         motors.triggerClose();
 
-//        while (!opModeIsActive()) {
-//            for (int i = 0; i < 30; i++) { // check for 30 cycles (~30 milliseconds) to detect pattern
-//                detectedPattern = patternDetector.returnId();
-//                Logging.log("pattern  = %f", detectedPattern);
-//                telemetry.addData("limelight", "Detected Pattern = %f", detectedPattern);
-//                telemetry.update();
-//                sleep(1);
-//            }
-//            detectedPattern = 23; // default pattern if limelight can't detect
-//        }
+        while (!opModeIsActive()) {
+            for (int i = 0; i < 30; i++) { // check for 30 cycles (~30 milliseconds) to detect pattern
+                detectedPattern = patternDetector.returnId(false);
+                Logging.log("pattern  = %f", detectedPattern);
+                telemetry.addData("limelight", "Detected Pattern = %f", detectedPattern);
+                telemetry.update();
+                sleep(1);
+            }
+            detectedPattern = 23; // default pattern if limelight can't detect
+        }
 
         waitForStart();
         runtime.reset();
@@ -209,7 +209,7 @@ public class AutoNearBlue2026 extends LinearOpMode {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             for (int i = 0; i < 30; i++) { // check for 30 cycles (~30 milliseconds) to detect pattern
-                detectedPattern = patternDetector.returnId();
+                detectedPattern = patternDetector.returnId(false);
                 Logging.log("pattern  = %f", detectedPattern);
                 telemetry.addData("limelight", "Detected Pattern = %f", detectedPattern);
                 telemetry.update();
