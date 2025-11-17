@@ -54,7 +54,7 @@ public class intakeUnit2026
     double intakePower = -0.96;
 
     double launchSpeedDump = 100;
-    double launchSpeedNear = 170; // degree/sec speed for launching from close triangle(x=1, y=1)
+    double launchSpeedNear = 173; // degree/sec speed for launching from close triangle(x=1, y=1)
     double launchSpeedFar = 195; // need more testing
 
     double trigger_close = 0.08;
@@ -65,7 +65,10 @@ public class intakeUnit2026
     private final DcMotor intakeMotor;
     public final DcMotorEx launcherMotor;
     public Servo triggerServo = null;
-
+    double p = 150.0;
+    double i = 3.0;
+    double d = 3.0;
+    double f = 0.00361;
 
     public intakeUnit2026(HardwareMap hardwareMap, String launcher, String intake, String trigger) {
         // Save reference to Hardware map
@@ -76,10 +79,7 @@ public class intakeUnit2026
         launcherMotor = hardwareMap.get(DcMotorEx.class, launcher);
 
         // update launcher motor PID for quick ramp up and keep the speed
-        double p = 100.0;
-        double i = 3.5;
-        double d = 0.2;
-        double f = 0.00361;
+
         launcherMotor.setVelocityPIDFCoefficients(p, i, d, f);
 
         /*
@@ -139,12 +139,15 @@ public class intakeUnit2026
      */
     public void triggerClose() {
         triggerServo.setPosition(trigger_close);
+        Logging.log("  ######### Trigger closed.");
+
     }
 
     /*
     Open trigger servo before launch
      */
     public void triggerOpen() {
+        Logging.log(" #########  Trigger opened.");
         triggerServo.setPosition(trigger_open);
     }
 
@@ -164,11 +167,11 @@ public class intakeUnit2026
         while ((startTime + msec) > System.currentTimeMillis()) {
             double speed = getLaunchVelocity();
             Logging.log("launcher motor velocity : %.1f.", speed);
-
             velocity += speed;
             sampleNum ++;
         }
-        return (velocity / sampleNum);
-
+        double aveSpeed = (velocity / sampleNum);
+        Logging.log("launcher motor average velocity : %.1f.", aveSpeed);
+        return aveSpeed;
     }
 }

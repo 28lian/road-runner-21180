@@ -101,6 +101,18 @@ public class Teleop2026 extends LinearOpMode {
         }
 
         //preset positions used for teleop commands
+        while (!isStarted()) {
+            double[] patternPos = patternDetector.returnPosition();
+            if (patternPos.length >= 2) {
+                telemetry.addData("Pattern ", "X: %.1f Y: %.1f", patternPos[0], patternPos[1]);
+                telemetry.addData("LL", "%s", patternPos.toString());
+            }
+            else
+            {
+                telemetry.addData("no pattern detected", 0);
+            }
+            telemetry.update();
+        }
 
         // Wait for the game to start (driver presses PLAY)
         telemetry.addData("Mode", "waiting for start.");
@@ -310,12 +322,16 @@ public class Teleop2026 extends LinearOpMode {
         checkingVelocityRampDown(waitTimeForTriggerClose);
         motors.triggerClose(); //close trigger to wait launcher motor speed up after first launching
 
+        // start shooting 2nd one
+        launchVelocity -= 4; // reduce a little bit.
         motors.startIntake(); // start intake motor to move 3rd artifacts into launcher
         reachTargetVelocity(launchVelocity, waitTimeForTriggerOpen);// waiting time for launcher motor ramp up
         motors.triggerOpen(); // shoot second
         checkingVelocityRampDown(waitTimeForTriggerClose);
         motors.triggerClose();
 
+        // start shooting 3rd one
+        launchVelocity -= 4; // reduce a little bit.
         reachTargetVelocity(launchVelocity, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen();  // shoot third
         checkingVelocityRampDown(waitTimeForTriggerClose);
@@ -349,7 +365,7 @@ public class Teleop2026 extends LinearOpMode {
 
         while (!artifactReached && ((runtime.milliseconds() - startTime) < msecond)) {
             double currentVel = motors.launcherAverageVelocity(20);
-            artifactReached = (currentVel < stableVelocity * 0.85); // when speed reduced to 85%
+            artifactReached = (currentVel < stableVelocity * 0.87); // when speed reduced to 87%
 
             gpButtons.checkGamepadButtons(gamepad1, gamepad2);
             drive.setDrivePowers(new PoseVelocity2d(

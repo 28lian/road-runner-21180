@@ -39,12 +39,21 @@ public final class Colored {
             List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
             for (LLResultTypes.FiducialResult fiducial : fiducials) {
                 int fiducialId = fiducial.getFiducialId();
-                if (fiducialId == 20 || fiducialId == 24) {
+                if (fiducialId == 20 || fiducialId == 24)
+                {
                     double x = fiducial.getTargetXDegrees();
                     double y = fiducial.getTargetYDegrees();
                     return new double[]{x, y};
                 }
+                else
+                {
+                    return new double[] {0, 0};
+                }
             }
+        }
+        else
+        {
+            return new double[] {0, 0};
         }
 
 //        double[] pythonOutputs = result.getPythonOutput();
@@ -66,23 +75,23 @@ public final class Colored {
 //        }
         return new double[0]; // no valid detection
     }
+
     public double returnId(boolean goal) {
         LLResult result = limelight.getLatestResult();
-
+        double detectedID = 0;
         if (result != null && result.isValid()) {
             List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
             for (LLResultTypes.FiducialResult fiducial : fiducials) {
                 int fiducialId = fiducial.getFiducialId();
                 if (goal) {
                     if (fiducialId == 20 || fiducialId == 24) {
-                        return fiducialId;
+                        detectedID = fiducialId;
                     }
                 } else {
                     if (fiducialId == 21 || fiducialId == 22 || fiducialId == 23) {
-                        return fiducialId;
+                        detectedID = fiducialId;
                     }
                 }
-                return fiducialId;
             }
         }
 //        double[] pythonOutputs = result.getPythonOutput();
@@ -101,7 +110,7 @@ public final class Colored {
 //            }
 //        }
 
-        return 0; // no valid detection
+        return detectedID; // no valid detection
     }
     public String GetDiagnostics() {
         LLStatus diags = new LLStatus();

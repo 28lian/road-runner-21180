@@ -94,7 +94,7 @@ public class AutoNearBlue2026 extends LinearOpMode {
 
             pickupPos = rowChoose(rowNum);
             // fixed polarity below (there was a double negative sign before)
-            pickupEndPos = new Vector2d(pickupPos.x, pickupPos.y + 1.25 * Params.HALF_MAT * Math.signum(pickupPos.y));
+            pickupEndPos = new Vector2d(pickupPos.x, pickupPos.y + 1.4 * Params.HALF_MAT * Math.signum(pickupPos.y));
 
             // action for picking up artifacts
             Action actMoveToPickup = drive.actionBuilder(drive.localizer.getPose())
@@ -151,39 +151,40 @@ public class AutoNearBlue2026 extends LinearOpMode {
     private void shootArtifacts() {
         int waitTimeForTriggerClose = 1000;
         int waitTimeForTriggerOpen = 700;
-        int rampUpTime = 400;
+        int rampUpTime = 1000;
+        double targetV = motors.launchSpeedNear;
 
         Logging.log("start shooting.");
         // start launcher motor if it has not been launched
         if (motors.getLauncherPower() < 0.4) {
             Logging.log("start launcher motor since it is stopped.");
             motors.startLauncher();
-            reachTargetVelocity(motors.launchSpeedNear, rampUpTime); // waiting time for launcher motor ramp up
+            reachTargetVelocity(targetV, rampUpTime); // waiting time for launcher motor ramp up
         }
 
         motors.triggerOpen(); // shoot first
-        Logging.log("launcher velocity for first one: %.1f.", motors.getLaunchVelocity());
-        velocityRampDown(waitTimeForTriggerClose);
+        Logging.log("launcher velocity for #1 one: %.1f.", motors.getLaunchVelocity());
+        velocityRampDown(targetV, waitTimeForTriggerClose);
         Logging.log("starting close trigger.");
         motors.triggerClose(); //close trigger to wait launcher motor speed up after first launching
 
+
+        // starting shoot 2nd one
+        targetV = motors.launchSpeedNear - 4;
         motors.startIntake(); // start intake motor to move 3rd artifacts into launcher
-        reachTargetVelocity(motors.launchSpeedNear, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
+        reachTargetVelocity(targetV, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen(); // shoot second
-        Logging.log("launcher velocity for second one: %.2f.", motors.getLaunchVelocity());
-
-        motors.revertIntake(); // temp reverse intake
-        int tmpSleep = 100;
-        recordVelocity(tmpSleep);
-        motors.stopIntake();
-        velocityRampDown(waitTimeForTriggerClose);
+        Logging.log("launcher velocity for #2 one: %.2f.", motors.getLaunchVelocity());
+        
+        velocityRampDown(targetV, waitTimeForTriggerClose);
         motors.triggerClose();
-        motors.startIntake(); // start intake again
 
-        reachTargetVelocity(motors.launchSpeedNear, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
+        // starting shoot third one
+        targetV = motors.launchSpeedNear - 4;
+        reachTargetVelocity(targetV, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen(); // shoot third
-        Logging.log("launcher velocity for 3rd one: %f.", motors.getLaunchVelocity());
-        velocityRampDown(waitTimeForTriggerClose + waitTimeForTriggerOpen); // waiting more time for the third one.
+        Logging.log("launcher velocity for #3 one: %f.", motors.getLaunchVelocity());
+        velocityRampDown(targetV, waitTimeForTriggerClose + waitTimeForTriggerOpen); // waiting more time for the third one.
     }
 
     // function that chooses the right row based on detected pattern, returns a Vector2d
@@ -245,37 +246,29 @@ public class AutoNearBlue2026 extends LinearOpMode {
         while ((runtime.milliseconds() - startTime) < msec) {
             double speed = motors.getLaunchVelocity();
             Logging.log("launcher motor velocity : %.1f.", speed);
-            Logging.log("Trigger position %.2f", motors.triggerServo.getPosition());
         }
     }
 
-    private void velocityRampDown(int msec) {
+    private void velocityRampDown(double shootSpeed, int msec) {
         double startTime = runtime.milliseconds();
-
         boolean artifactReached = false;
-        double stableVelocity;
-        stableVelocity = motors.launcherAverageVelocity(20);
 
         while (!artifactReached && ((runtime.milliseconds() - startTime) < msec)) {
-            double currentVel = motors.launcherAverageVelocity(20);
-            artifactReached = (currentVel < stableVelocity * 0.85); // when speed reduced to 85%
-            double speed = motors.getLaunchVelocity();
-            Logging.log("launcher motor velocity : %.1f.", speed);
-            Logging.log("Trigger position %.2f", motors.triggerServo.getPosition());
+            double currentVel = motors.launcherAverageVelocity(12);
+            artifactReached = (currentVel < shootSpeed * 0.87); // when speed reduced to 87%
         }
-        Logging.log("Total waiting duration = %.2f", runtime.milliseconds() - startTime);
+        Logging.log(" ** Total ramp down duration = %.2f", runtime.milliseconds() - startTime);
     }
 
     private void reachTargetVelocity(double targetVel, int msec) {
         double startTime = runtime.milliseconds();
         boolean rampedUp = false;
-
+        motors.setLauncherVelocity(targetVel);
         while (!rampedUp && ((runtime.milliseconds() - startTime) < msec)) {
-            double currentVel = motors.launcherAverageVelocity(20);
+            double currentVel = motors.launcherAverageVelocity(12);
             rampedUp = (currentVel > targetVel * 0.95); // when speed reduced to 85%
-            Logging.log("launcher motor average velocity : %.1f.", currentVel);
         }
-        Logging.log("Total waiting duration = %.2f", runtime.milliseconds() - startTime);
+        Logging.log(" #### Total ramp up duration = %.2f", runtime.milliseconds() - startTime);
     }
 
     // For future use when we have an artifact sorter mechanism
