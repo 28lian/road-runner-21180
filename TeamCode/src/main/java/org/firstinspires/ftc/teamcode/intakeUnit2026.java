@@ -53,6 +53,7 @@ public class intakeUnit2026
 {
     double intakePower = -0.96;
 
+    double launchSpeedDump = 100;
     double launchSpeedNear = 170; // degree/sec speed for launching from close triangle(x=1, y=1)
     double launchSpeedFar = 195; // need more testing
 

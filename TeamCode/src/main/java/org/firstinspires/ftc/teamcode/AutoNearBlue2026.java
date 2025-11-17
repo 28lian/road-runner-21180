@@ -64,6 +64,7 @@ public class AutoNearBlue2026 extends LinearOpMode {
 
         if (opModeIsActive()) {
             run_auto();
+            Params.currentPose = drive.localizer.getPose(); // save current position
         }
     }
 

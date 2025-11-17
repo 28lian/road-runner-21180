@@ -64,6 +64,7 @@ public class GamePadButtons2026 {
     public boolean triggerClose;
     public boolean launchArtifacts;
     public boolean launchArtifactsFar;
+    public boolean dumpOne;
 
     public void checkGamepadButtons(@NonNull Gamepad gamepad1, @NonNull Gamepad gamepad2) {
         //game pad 1 buttons
@@ -83,27 +84,25 @@ public class GamePadButtons2026 {
         speedUp = gamepad1.right_bumper;
         speedDown = gamepad1.left_bumper;
 
-        launch = gamepad2.left_bumper; // temp button can change later
-        launchOneNear = gamepad2.dpad_up;
-        launchOneFar = gamepad2.dpad_down;
-
-        launchOff = gamepad2.right_bumper; // temp button can change later
-
         // intake buttons
         intakeOn = (gamepad1.left_trigger > 0.1) || (gamepad2.left_trigger > 0.1);
         intakeOff = (gamepad1.right_trigger > 0.1) || (gamepad2.right_trigger > 0.1);
 
+        alignShootPos = gamepad1.a; // temp button can chang later
+        autoPark = gamepad1.b; // temp button can change later
+
         // trigger servo buttons
-        triggerOpen = gamepad1.y || gamepad2.y;
-        triggerClose = gamepad1.x || gamepad2.x;
+        triggerOpen = gamepad2.y;
+        triggerClose = gamepad2.x;
+        dumpOne = gamepad2.b;
+        autoLaunchPos = gamepad2.a;
 
         // launcher buttons
         launchArtifacts = gamepad1.dpad_left || gamepad2.dpad_left;
         launchArtifactsFar = gamepad1.dpad_right || gamepad2.dpad_right;
-
-        autoLaunchPos = gamepad2.a;
-
-        alignShootPos = gamepad1.a; // temp button can chang later
-        autoPark = gamepad1.b; // temp button can change later
+        launch = gamepad2.left_bumper; // temp button can change later
+        launchOneNear = gamepad2.dpad_up;
+        launchOneFar = gamepad2.dpad_down;
+        launchOff = gamepad2.right_bumper; // temp button can change later
     }
 }

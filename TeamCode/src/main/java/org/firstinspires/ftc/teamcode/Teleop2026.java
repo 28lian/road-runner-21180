@@ -165,6 +165,7 @@ public class Teleop2026 extends LinearOpMode {
                 int waitTimeForTriggerClose = 1000;
                 double launchVelocity = motors.launchSpeedNear;
                 motors.startLauncher();
+                motors.startIntake();
                 reachTargetVelocity(launchVelocity, rampUpTime);
                 motors.triggerOpen(); // shoot first
                 checkingVelocityRampDown(waitTimeForTriggerClose);
@@ -177,6 +178,19 @@ public class Teleop2026 extends LinearOpMode {
                 int waitTimeForTriggerClose = 1000;
                 double launchVelocity = motors.launchSpeedFar;
                 motors.startLauncher();
+                motors.startIntake();
+                reachTargetVelocity(launchVelocity, rampUpTime);
+                motors.triggerOpen(); // shoot first
+                checkingVelocityRampDown(waitTimeForTriggerClose);
+                motors.triggerClose(); //close trigger to wait launcher motor speed up after first launching
+            }
+
+            // shoot one out for Far launching
+            if (gpButtons.dumpOne) {
+                int rampUpTime = 400;
+                int waitTimeForTriggerClose = 400;
+                double launchVelocity = motors.launchSpeedDump;
+                motors.setLauncherVelocity(launchVelocity);
                 reachTargetVelocity(launchVelocity, rampUpTime);
                 motors.triggerOpen(); // shoot first
                 checkingVelocityRampDown(waitTimeForTriggerClose);
