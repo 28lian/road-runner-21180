@@ -36,6 +36,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+
 import java.util.List;
 
 /**
@@ -196,11 +198,17 @@ public class Teleop2026 extends LinearOpMode {
                 double[] patternPos = patternDetector.returnPosition();
                 if (patternPos.length >= 2) {
                     double angleToTurn = patternPos[0];
+                    Pose3D botpose = patternDetector.returnPositionbeta();
                     Actions.runBlocking(
-                            drive.actionBuilder(new Pose2d(0,0,0))
-                                    .strafeToLinearHeading(new Vector2d(0,0.00000001), 3.141592653589 * angleToTurn / 180)
+                            drive.actionBuilder(new Pose2d(botpose.getPosition().x, botpose.getPosition().y, botpose.getOrientation().getYaw()))
+                                    .strafeToLinearHeading(new Vector2d(1*Params.HALF_MAT, 1*Params.HALF_MAT), Math.toRadians(135))
                                     .build()
                     );
+//                    Actions.runBlocking(
+//                            drive.actionBuilder(0, 0, 0)
+//                                    .strafeToLinearHeading(new Vector2d(0,0.00000001), 3.141592653589 * angleToTurn / 180)
+//                                    .build()
+//                    );
                 } else {
                     telemetry.addData("No AprilTag detected", 0);
                     telemetry.update();

@@ -6,6 +6,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.internal.opmode.TelemetryInternal;
 
 import java.util.List;
@@ -20,6 +21,17 @@ public final class Colored {
         limelight.setPollRateHz(100);  // poll 100x per second
         limelight.start();
         limelight.pipelineSwitch(1);
+    }
+    public void setOrientation(double robotYaw) {
+        limelight.updateRobotOrientation(robotYaw);
+    }
+    public Pose3D returnPositionbeta() {
+        LLResult result = limelight.getLatestResult();
+        if (result != null && result.isValid()) {
+            return result.getBotpose();
+        } else {
+            return null;
+        }
     }
     public double[] returnPosition() {
         LLResult result = limelight.getLatestResult();
