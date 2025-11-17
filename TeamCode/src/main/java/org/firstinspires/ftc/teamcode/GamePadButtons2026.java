@@ -54,7 +54,8 @@ public class GamePadButtons2026 {
     public boolean alignShootPos;
     public boolean autoPark;
     public boolean launch;
-    public boolean launchFar;
+    public boolean launchOneNear;
+    public boolean launchOneFar;
     public boolean launchOff;
     public boolean intakeOn;
     public boolean intakeOff;
@@ -83,7 +84,9 @@ public class GamePadButtons2026 {
         speedDown = gamepad1.left_bumper;
 
         launch = gamepad2.left_bumper; // temp button can change later
-        launchFar = gamepad1.dpad_up || gamepad2.dpad_up;
+        launchOneNear = gamepad2.dpad_up;
+        launchOneFar = gamepad2.dpad_down;
+
         launchOff = gamepad2.right_bumper; // temp button can change later
 
         // intake buttons

@@ -28,7 +28,6 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -113,8 +112,6 @@ public class Teleop2026 extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            // refresh pattern detector
-            patternDetector = new Colored(hardwareMap);
 
             //gamepad1 buttons
             gpButtons.checkGamepadButtons(gamepad1, gamepad2);
@@ -161,8 +158,29 @@ public class Teleop2026 extends LinearOpMode {
                 motors.stopLauncher();
             }
 
-            if (gpButtons.launchFar) {
-                motors.startLauncherFar();
+            // in case there are 4 artifacts on robot.
+            // shoot one out
+            if (gpButtons.launchOneNear) {
+                int rampUpTime = 600;
+                int waitTimeForTriggerClose = 1000;
+                double launchVelocity = motors.launchSpeedNear;
+                motors.startLauncher();
+                reachTargetVelocity(launchVelocity, rampUpTime);
+                motors.triggerOpen(); // shoot first
+                checkingVelocityRampDown(waitTimeForTriggerClose);
+                motors.triggerClose(); //close trigger to wait launcher motor speed up after first launching
+            }
+
+            // shoot one out for Far launching
+            if (gpButtons.launchOneFar) {
+                int rampUpTime = 600;
+                int waitTimeForTriggerClose = 1000;
+                double launchVelocity = motors.launchSpeedFar;
+                motors.startLauncher();
+                reachTargetVelocity(launchVelocity, rampUpTime);
+                motors.triggerOpen(); // shoot first
+                checkingVelocityRampDown(waitTimeForTriggerClose);
+                motors.triggerClose(); //close trigger to wait launcher motor speed up after first launching
             }
 
             // intake actions
@@ -209,13 +227,9 @@ public class Teleop2026 extends LinearOpMode {
 //                                    .strafeToLinearHeading(new Vector2d(0,0.00000001), 3.141592653589 * angleToTurn / 180)
 //                                    .build()
 //                    );
-                } else {
-                    telemetry.addData("No AprilTag detected", 0);
-                    telemetry.update();
                 }
             }
 
-            telemetry.update();
             if (debugFlag) {
 
                 // display trigger servo position for testing purpose.
@@ -223,14 +237,18 @@ public class Teleop2026 extends LinearOpMode {
                 telemetry.addData("launcher motor", "power = %.3f", motors.getLauncherPower());
                 telemetry.addData("launcher motor", "velocity = %.3f", motors.getLaunchVelocity());
 
+                /*
                 Logging.log("launcher motor velocity : %.1f. power = %.3f", motors.getLaunchVelocity(), motors.getLauncherPower());
+
                 double[] patternPos = patternDetector.returnPosition();
                 if (patternPos.length >= 2) {
-                    double angleToTurn = patternPos[0];
                     telemetry.addData("Pattern ", "X: %.1f Y: %.1f", patternPos[0], patternPos[1]);
                 } else {
                     telemetry.addData("no pattern detected", 0);
                 }
+
+                 */
+
                 telemetry.addData("heading", " %.3f", Math.toDegrees(drive.localizer.getPose().heading.log()));
                 telemetry.addData("location", " %s", drive.localizer.getPose().position.toString());
 //                // return angle of detected pattern if any
@@ -253,7 +271,7 @@ public class Teleop2026 extends LinearOpMode {
 
     public void shootArtifacts(boolean farLaunch) {
         int waitTimeForTriggerClose = 1000;
-        int waitTimeForTriggerOpen = 600; //950; TODO: checking if it is ok for far shooting
+        int waitTimeForTriggerOpen = 600;
         int rampUpTime = 800;
         double launchVelocity = motors.launchSpeedNear;
         if (farLaunch) {
@@ -349,5 +367,4 @@ public class Teleop2026 extends LinearOpMode {
         }
         Logging.log("Total waiting duration = %.2f", runtime.milliseconds() - startTime);
     }
-
 }
