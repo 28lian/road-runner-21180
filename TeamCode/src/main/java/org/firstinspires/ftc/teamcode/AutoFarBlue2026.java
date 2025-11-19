@@ -29,7 +29,7 @@ public class AutoFarBlue2026 extends LinearOpMode {
         motors = new intakeUnit2026(hardwareMap, "launcher", "intake", "triggerServo");
 
         setSide();
-
+        Params.leftOrRight = leftOrRight;
         // Starting pose
         Pose2d startPose = new Pose2d(
                 (-6 * Params.HALF_MAT + Params.CHASSIS_HALF_LENGTH),
@@ -38,7 +38,7 @@ public class AutoFarBlue2026 extends LinearOpMode {
         );
 
         //drive here to launch
-        launchPose = new Pose2d(- 4.5 * Params.HALF_MAT, leftOrRight * Params.HALF_MAT, Math.toRadians(-155.0 * leftOrRight));
+        launchPose = new Pose2d(- 4.5 * Params.HALF_MAT, leftOrRight * Params.HALF_MAT, Math.toRadians(motors.launchDegreeFar * leftOrRight));
 
         //drive here after launching
         endPose = new Vector2d(- 5 * Params.HALF_MAT, leftOrRight * 3 * Params.HALF_MAT);
@@ -49,6 +49,7 @@ public class AutoFarBlue2026 extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
             run_auto();
+            Params.currentPose = drive.localizer.getPose(); // save current position
         }
     }
 
@@ -60,6 +61,7 @@ public class AutoFarBlue2026 extends LinearOpMode {
                         .build()
         );
 
+        sleep(1); // waiting near alliance shooting.
         shootArtifacts(true);
 
         Actions.runBlocking(
@@ -70,42 +72,10 @@ public class AutoFarBlue2026 extends LinearOpMode {
 
     }
 
-//    // Shoots 3 balls with same timing as before
-//    private void shootArtifacts() {
-//        int waitTimeForTriggerClose = 300;
-//        int waitTimeForTriggerOpen = 950;
-//
-//        Logging.log("start shooting.");
-//
-//        if (motors.getLauncherPower() < 0.1) {
-//            Logging.log("start launcher motor since it is stopped.");
-//            motors.startLauncherFar();
-//            sleep(waitTimeForTriggerOpen + 500);
-//        }
-//
-//        motors.triggerOpen();
-//        sleep(waitTimeForTriggerClose);
-//        motors.triggerClose();
-//
-//        motors.startIntake();
-//        sleep(waitTimeForTriggerOpen);
-//        motors.triggerOpen();
-//        sleep(waitTimeForTriggerClose);
-//
-//        motors.triggerClose();
-//        sleep(waitTimeForTriggerOpen);
-//        motors.triggerOpen();
-//        sleep(waitTimeForTriggerClose + 150);
-//
-//        motors.triggerClose();
-//        motors.stopLauncher();
-//        motors.stopIntake();
-//    }
-
     public void shootArtifacts(boolean farLaunch) {
         int waitTimeForTriggerClose = 300;
-        int waitTimeForTriggerOpen = 700; //950; TODO: checking if it is ok for far shooting
-        int rampUpTime = 600;
+        int waitTimeForTriggerOpen = 1000; // TODO: checking if it is ok for far shooting
+        int rampUpTime = 1000;
 
         // start launcher motor if it has not been launched
         if (motors.getLauncherPower() < 0.1) {

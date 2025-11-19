@@ -83,8 +83,9 @@ public class Teleop2026 extends LinearOpMode {
         patternDetector = new Colored(hardwareMap);
 
         drive = new MecanumDrive(hardwareMap, Params.currentPose);
-        drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        Logging.log("param.currentPose heading = %s", Params.currentPose.heading.log());
 
+        //drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motors = new intakeUnit2026(hardwareMap, "launcher", "intake", "triggerServo");
 
         //set shoot position
@@ -144,7 +145,7 @@ public class Teleop2026 extends LinearOpMode {
                     ),
                     -gpButtons.robotTurn * maxDrivePower
             ));
-
+            drive.updatePoseEstimate(); // update dire pose.
 
 //            if (gpButtons.alignShootPos) {
 //                Actions.runBlocking(
@@ -232,6 +233,13 @@ public class Teleop2026 extends LinearOpMode {
             }
 
             if (gpButtons.launchArtifactsFar) {
+                // turn for heading correction before shooting
+                Actions.runBlocking(
+                        drive.actionBuilder(drive.localizer.getPose())
+                                .turnTo(Math.toRadians(motors.launchDegreeFar * Params.leftOrRight))
+                                .build()
+                );
+
                 shootArtifacts(true);
             }
 

@@ -34,6 +34,7 @@ public class AutoNearBlue2026 extends LinearOpMode {
     @Override
     public void runOpMode() {
         setSide();
+        Params.leftOrRight = leftOrRight;
 
         // connect the hardware map to color discrimination system and prepare launcher, intake, and trigger
         patternDetector = new Colored(hardwareMap);

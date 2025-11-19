@@ -55,7 +55,8 @@ public class intakeUnit2026
 
     double launchSpeedDump = 100;
     double launchSpeedNear = 173; // degree/sec speed for launching from close triangle(x=1, y=1)
-    double launchSpeedFar = 195; // need more testing
+    double launchSpeedFar = 199; // need more testing
+    double launchDegreeFar = -155;
 
     double trigger_close = 0.08;
     double trigger_open = 0.36;
