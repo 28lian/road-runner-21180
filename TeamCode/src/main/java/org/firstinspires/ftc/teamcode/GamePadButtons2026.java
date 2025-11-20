@@ -51,7 +51,8 @@ public class GamePadButtons2026 {
     public float robotTurn;
     public boolean speedDown;
     public boolean speedUp;
-    public boolean alignShootPos;
+    public boolean alignShootPosNear;
+    public boolean alignShootPosFar;
     public boolean autoPark;
     public boolean launch;
     public boolean launchOneNear;
@@ -59,7 +60,6 @@ public class GamePadButtons2026 {
     public boolean launchOff;
     public boolean intakeOn;
     public boolean intakeOff;
-    public boolean autoLaunchPos;
     public boolean triggerOpen;
     public boolean triggerClose;
     public boolean launchArtifacts;
@@ -88,14 +88,13 @@ public class GamePadButtons2026 {
         intakeOn = (gamepad1.left_trigger > 0.1) || (gamepad2.left_trigger > 0.1);
         intakeOff = (gamepad1.right_trigger > 0.1) || (gamepad2.right_trigger > 0.1);
 
-        alignShootPos = gamepad1.a; // temp button can chang later
+        alignShootPosNear = gamepad1.x; // temp button can chang later
+        alignShootPosFar = gamepad1.y; // temp button can chang later
         autoPark = gamepad1.b; // temp button can change later
 
         // trigger servo buttons
         triggerOpen = gamepad2.y;
         triggerClose = gamepad2.x;
-        dumpOne = gamepad2.b;
-        autoLaunchPos = gamepad2.a;
 
         // launcher buttons
         launchArtifacts = gamepad1.dpad_left || gamepad2.dpad_left;
@@ -104,5 +103,6 @@ public class GamePadButtons2026 {
         launchOneNear = gamepad2.dpad_up;
         launchOneFar = gamepad2.dpad_down;
         launchOff = gamepad2.right_bumper; // temp button can change later
+        dumpOne = gamepad2.b;
     }
 }

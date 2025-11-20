@@ -38,8 +38,8 @@ import com.acmerobotics.roadrunner.Pose2d;
  */
 public class Params {
     // road runner
-    static Pose2d startPose = new Pose2d(0,0,180);
-    static Pose2d currentPose = new Pose2d(0,0,180);
+    static Pose2d startPose = new Pose2d(0,0, Math.toRadians(180));
+    static Pose2d currentPose = new Pose2d(0,0,Math.toRadians(180));
     static int leftOrRight = 1;
     static boolean armCalibrated = false;
     static int blueOrRed = 1; // 1 for blue, -1 for red

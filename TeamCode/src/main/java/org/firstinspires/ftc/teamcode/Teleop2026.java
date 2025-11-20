@@ -89,11 +89,20 @@ public class Teleop2026 extends LinearOpMode {
         motors = new intakeUnit2026(hardwareMap, "launcher", "intake", "triggerServo");
 
         //set shoot position
-        int leftOrRight = 1;
+        Vector2d shootPosNear; // where the robot should shoot
+        double shootHeading; //the direction the robot shoot in
+        int leftOrRight = Params.leftOrRight;
         double shootPosX = 1 * Params.HALF_MAT;
         double shootPosY = leftOrRight * Params.HALF_MAT;
-        double shootHeading = Math.toRadians(180) + Math.atan2(leftOrRight * (6 * Params.HALF_MAT - Math.abs(shootPosY)), 6 * Params.HALF_MAT - shootPosX);
-        Vector2d shootPos = new Vector2d(shootPosX, shootPosY);
+        // made the following polarity change to shootHeading calculation
+        shootHeading = Math.toRadians(180.0) + Math.atan2(leftOrRight * (6 * Params.HALF_MAT - Math.abs(shootPosY)), 6 * Params.HALF_MAT - shootPosX);
+        shootPosNear = new Vector2d(shootPosX, shootPosY);
+
+        // far shoot position
+        Pose2d shootPosFar = new Pose2d(
+                - 4.5 * Params.HALF_MAT,
+                leftOrRight * Params.HALF_MAT,
+                Math.toRadians(motors.launchDegreeFar * leftOrRight));
 
         // bulk reading setting - auto refresh mode
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -147,7 +156,7 @@ public class Teleop2026 extends LinearOpMode {
             ));
             drive.updatePoseEstimate(); // update dire pose.
 
-//            if (gpButtons.alignShootPos) {
+//            if (gpButtons.alignShootPosNear) {
 //                Actions.runBlocking(
 //                        drive.actionBuilder(new AutoTest().newStartPose)
 //                                .strafeToLinearHeading(new AutoTest().shootPos.position, new AutoTest().shootPos.heading)
@@ -228,19 +237,32 @@ public class Teleop2026 extends LinearOpMode {
                 motors.triggerClose();
             }
 
+            // near shooting
             if (gpButtons.launchArtifacts) {
                 shootArtifacts(false);
             }
 
+            // far shooting
             if (gpButtons.launchArtifactsFar) {
-                // turn for heading correction before shooting
+                shootArtifacts(true);
+            }
+
+            // move to far shoot position
+            if (gpButtons.alignShootPosFar) {
                 Actions.runBlocking(
                         drive.actionBuilder(drive.localizer.getPose())
-                                .turnTo(Math.toRadians(motors.launchDegreeFar * Params.leftOrRight))
+                                .strafeToLinearHeading(shootPosFar.position, shootPosFar.heading)
                                 .build()
                 );
+            }
 
-                shootArtifacts(true);
+            // move to near shoot position
+            if (gpButtons.alignShootPosNear) {
+                Actions.runBlocking(
+                        drive.actionBuilder(drive.localizer.getPose())
+                                .strafeToLinearHeading(shootPosNear, shootHeading)
+                                .build()
+                );
             }
 
             // TODO : not implemented correctly yet
@@ -291,13 +313,15 @@ public class Teleop2026 extends LinearOpMode {
 
                  */
 
-                telemetry.addData("heading", " %.3f", Math.toDegrees(drive.localizer.getPose().heading.log()));
+                telemetry.addData("heading", " %.3f", Math.toDegrees(drive.localizer.getPose().heading.toDouble()));
                 telemetry.addData("location", " %s", drive.localizer.getPose().position.toString());
                 telemetry.addData(" --- ", " --- ");
                 telemetry.update(); // update message at the end of while loop
 
             }
 
+            // save the current position in a static variable.
+            Params.currentPose = drive.localizer.getPose();
         }
 
         // The motor stop on their own but power is still applied. Turn off motor.

@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name = "Auto Near Blue gate", group = "Concept")
+@Autonomous(name = "Auto Near Blue Gate", group = "Concept")
 public class AutoNearBlueGate26 extends LinearOpMode {
     // get the software-hardware links ready
     private final ElapsedTime runtime = new ElapsedTime();
