@@ -195,7 +195,7 @@ public class AutoNearBlueGate26 extends LinearOpMode {
         motors.triggerClose();
 
         // starting shoot third one
-        targetV = motors.launchSpeedNear - 4;
+        targetV = motors.launchSpeedNear - 5;
         reachTargetVelocity(targetV, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen(); // shoot third
         Logging.log("launcher velocity for #3 one: %f.", motors.getLaunchVelocity());
@@ -278,7 +278,7 @@ public class AutoNearBlueGate26 extends LinearOpMode {
     private void reachTargetVelocity(double targetVel, int msec) {
         double startTime = runtime.milliseconds();
         boolean rampedUp = false;
-        motors.setLauncherVelocity(targetVel);
+        motors.setLauncherVelocity(targetVel); // update target velocity
         while (!rampedUp && ((runtime.milliseconds() - startTime) < msec)) {
             double currentVel = motors.launcherAverageVelocity(12);
             rampedUp = (currentVel > targetVel * 0.95); // when speed reduced to 85%

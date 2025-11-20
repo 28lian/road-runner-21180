@@ -8,10 +8,12 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name = "Auto Near Blue 2026", group = "Concept")
+@Disabled
 public class AutoNearBlue2026 extends LinearOpMode {
     // get the software-hardware links ready
     private final ElapsedTime runtime = new ElapsedTime();

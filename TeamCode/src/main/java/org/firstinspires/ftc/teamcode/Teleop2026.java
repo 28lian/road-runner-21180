@@ -182,7 +182,7 @@ public class Teleop2026 extends LinearOpMode {
                 reachTargetVelocity(launchVelocity, rampUpTime);
                 motors.triggerOpen(); // shoot first
                 checkingVelocityRampDown(waitTimeForTriggerClose);
-                motors.triggerClose(); //close trigger to wait launcher motor speed up after first launching
+                motors.triggerClose();
             }
 
             // shoot one out for Far launching
@@ -190,12 +190,12 @@ public class Teleop2026 extends LinearOpMode {
                 int rampUpTime = 600;
                 int waitTimeForTriggerClose = 1000;
                 double launchVelocity = motors.launchSpeedFar;
-                motors.startLauncher();
+                motors.startLauncherFar();
                 motors.startIntake();
                 reachTargetVelocity(launchVelocity, rampUpTime);
                 motors.triggerOpen(); // shoot first
                 checkingVelocityRampDown(waitTimeForTriggerClose);
-                motors.triggerClose(); //close trigger to wait launcher motor speed up after first launching
+                motors.triggerClose();
             }
 
             // shoot one out for Far launching
@@ -207,7 +207,7 @@ public class Teleop2026 extends LinearOpMode {
                 reachTargetVelocity(launchVelocity, rampUpTime);
                 motors.triggerOpen(); // shoot first
                 checkingVelocityRampDown(waitTimeForTriggerClose);
-                motors.triggerClose(); //close trigger to wait launcher motor speed up after first launching
+                motors.triggerClose();
             }
 
             // intake actions
@@ -244,25 +244,33 @@ public class Teleop2026 extends LinearOpMode {
             }
 
             // TODO : not implemented correctly yet
-            if(gpButtons.autoLaunchPos) {
-                // move angle to launch using limelight return position (which returns degrees x and degrees y of the pattern)
-                // telemetry
-                double[] patternPos = patternDetector.returnPosition();
-                if (patternPos.length >= 2) {
-                    double angleToTurn = patternPos[0];
-                    Pose3D botpose = patternDetector.returnPositionbeta();
-                    Actions.runBlocking(
-                            drive.actionBuilder(new Pose2d(botpose.getPosition().x, botpose.getPosition().y, botpose.getOrientation().getYaw()))
-                                    .strafeToLinearHeading(new Vector2d(1*Params.HALF_MAT, 1*Params.HALF_MAT), Math.toRadians(135))
-                                    .build()
-                    );
-//                    Actions.runBlocking(
-//                            drive.actionBuilder(0, 0, 0)
-//                                    .strafeToLinearHeading(new Vector2d(0,0.00000001), 3.141592653589 * angleToTurn / 180)
-//                                    .build()
-//                    );
-                }
-            }
+//            if(gpButtons.autoLaunchPos) {
+//                // move angle to launch using limelight return position (which returns degrees x and degrees y of the pattern)
+//                // telemetry
+//                double[] patternPos = patternDetector.returnPosition();
+//                if (patternPos.length >= 2) {
+//                    double angleToTurn = patternPos[0];
+////                    Pose3D botpose = patternDetector.returnPositionbeta();
+////                    Actions.runBlocking(
+////                            drive.actionBuilder(new Pose2d(botpose.getPosition().x, botpose.getPosition().y, botpose.getOrientation().getYaw()))
+////                                    .strafeToLinearHeading(new Vector2d(1*Params.HALF_MAT, 1*Params.HALF_MAT), Math.toRadians(135))
+////                                    .build()
+////                    );
+//                    if (angleToTurn > 0) {
+//                        Actions.runBlocking(
+//                                drive.actionBuilder(new Pose2d(0,0,0))
+//                                        .strafeToLinearHeading(new Vector2d(0,0.00000000000000000000000001), 3.141592653589 * angleToTurn / 180)
+//                                        .build()
+//                        );
+//                    } else if (angleToTurn < 0) {
+//                        Actions.runBlocking(
+//                                drive.actionBuilder(new Pose2d(0,0,0))
+//                                        .strafeToLinearHeading(new Vector2d(0,0.00000000000000000000000001), -3.141592653589 * Math.abs(angleToTurn) / 180)
+//                                        .build()
+//                        );
+//                    }
+//                }
+//            }
 
             if (debugFlag) {
 
@@ -285,14 +293,6 @@ public class Teleop2026 extends LinearOpMode {
 
                 telemetry.addData("heading", " %.3f", Math.toDegrees(drive.localizer.getPose().heading.log()));
                 telemetry.addData("location", " %s", drive.localizer.getPose().position.toString());
-//                // return angle of detected pattern if any
-//                double[] patternPos = patternDetector.returnPosition();
-//                // use the coordinates of the april tag to detect how much the robot need to turn
-//                if (patternPos.length >= 2) {
-//                    telemetry.addData("Pattern ", "X: %.1f Y: %.1f Angle: %.1f", patternPos[0], patternPos[1], Math.toDegrees(Math.atan2(patternPos[0], patternPos[1])));
-//                } else {
-//                    telemetry.addData("Pattern ", "not detected");
-//                }
                 telemetry.addData(" --- ", " --- ");
                 telemetry.update(); // update message at the end of while loop
 
@@ -339,7 +339,7 @@ public class Teleop2026 extends LinearOpMode {
         motors.triggerClose();
 
         // start shooting 3rd one
-        launchVelocity -= 4; // reduce a little bit.
+        launchVelocity -= 1; // reduce a little bit.
         reachTargetVelocity(launchVelocity, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen();  // shoot third
         checkingVelocityRampDown(waitTimeForTriggerClose);
@@ -389,6 +389,7 @@ public class Teleop2026 extends LinearOpMode {
     private void reachTargetVelocity(double targetVel, int msec) {
         double startTime = runtime.milliseconds();
         boolean rampedUp = false;
+        motors.setLauncherVelocity(targetVel); // update target velocity
 
         while (!rampedUp && ((runtime.milliseconds() - startTime) < msec)) {
             double currentVel = motors.launcherAverageVelocity(20);

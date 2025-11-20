@@ -118,6 +118,7 @@ public class AutoFarBlue2026 extends LinearOpMode {
         sleep(waitTimeForTriggerClose);
 
         motors.triggerClose();
+        motors.setLauncherVelocity(motors.launchDegreeFar - 4);
         sleep(waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen();  // shoot third
         sleep(waitTimeForTriggerClose);
