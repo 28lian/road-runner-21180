@@ -53,6 +53,7 @@ public class GamePadButtons2026 {
     public boolean speedUp;
     public boolean alignShootPosNear;
     public boolean alignShootPosFar;
+    public boolean resetShootPos;
     public boolean autoPark;
     public boolean launch;
     public boolean launchOneNear;
@@ -90,7 +91,7 @@ public class GamePadButtons2026 {
 
         alignShootPosNear = gamepad1.x; // temp button can chang later
         alignShootPosFar = gamepad1.y; // temp button can chang later
-        autoPark = gamepad1.b; // temp button can change later
+        resetShootPos = gamepad1.b; // temp button can change later
 
         // trigger servo buttons
         triggerOpen = gamepad2.y;

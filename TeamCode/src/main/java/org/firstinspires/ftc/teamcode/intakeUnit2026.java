@@ -32,9 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -55,7 +53,7 @@ public class intakeUnit2026
 
     double launchSpeedDump = 100;
     double launchSpeedNear = 173; // degree/sec speed for launching from close triangle(x=1, y=1)
-    double launchSpeedFar = 199; // need more testing
+    double launchSpeedFar = 197; // need more testing
     double launchDegreeFar = -155;
 
     double trigger_close = 0.08;
@@ -106,7 +104,7 @@ public class intakeUnit2026
         intakeMotor.setPower(-intakePower);
     }
 
-    public void startLauncher() {
+    public void startLaunchNear() {
         //launcherMotor.setPower(closePower);
         launcherMotor.setVelocity(launchSpeedNear, AngleUnit.DEGREES);
         Logging.log("start launcher by setting velocity %.2f.", launchSpeedNear);

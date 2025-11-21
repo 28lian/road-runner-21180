@@ -9,10 +9,12 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name = "Auto Near Blue Gate", group = "Concept")
+@Autonomous(name = "Auto Near Blue Gate Pos45", group = "Concept")
+@Disabled
 public class AutoNearBlueGate26 extends LinearOpMode {
     // get the software-hardware links ready
     private final ElapsedTime runtime = new ElapsedTime();
@@ -32,25 +34,30 @@ public class AutoNearBlueGate26 extends LinearOpMode {
     private Vector2d shootPos; // where the robot should shoot
     private double shootHeading; //the direction the robot shoot in
 
+    public Pose2d startPose;
+
+    public void setStartPosition() {
+        startPose = new Pose2d(
+                (4.76 * Params.HALF_MAT), // add additional 0.5 inch according to testing
+                (leftOrRight * 3.9 * Params.HALF_MAT), Math.toRadians(180.0 + leftOrRight * 45.0)
+        );
+    }
+
     @Override
     public void runOpMode() {
         setSide();
+        setStartPosition();
         Params.leftOrRight = leftOrRight;
 
         // connect the hardware map to color discrimination system and prepare launcher, intake, and trigger
         patternDetector = new Colored(hardwareMap);
         motors = new intakeUnit2026(hardwareMap, "launcher", "intake", "triggerServo");
 
-        // set the starting position at (6 HALFMATS - HALF OF ROBOT LENGTH, HALF OF ROBOT WIDTH [sign depends on sign]) and with heading in reverse
-        // where the robot is placed at the start
-        Pose2d startPose = new Pose2d(
-                (6 * Params.HALF_MAT - Params.CHASSIS_HALF_LENGTH + 0.5), // add additional 0.5 inch according to testing
-                (leftOrRight * Params.CHASSIS_HALF_WIDTH), Math.toRadians(180.0)
-        );
+        Params.currentPose = startPose; // save the Position
 
         // define shoot position at (HALF_MAT, HALF_MAT), (HALF_MAT, -HALF_MAT), calculate shoot angle based on location x, y
-        double shootPosX = 1 * Params.HALF_MAT;
-        double shootPosY = leftOrRight * Params.HALF_MAT;
+        double shootPosX = 1 * Params.HALF_MAT + 2.0;
+        double shootPosY = leftOrRight * (Params.HALF_MAT + 2.0);
         // made the following polarity change to shootHeading calculation
         shootHeading = Math.toRadians(180.0) + Math.atan2(leftOrRight * (6 * Params.HALF_MAT - Math.abs(shootPosY)), 6 * Params.HALF_MAT - shootPosX);
         shootPos = new Vector2d(shootPosX, shootPosY);
@@ -97,7 +104,7 @@ public class AutoNearBlueGate26 extends LinearOpMode {
 
             pickupPos = rowChoose(rowNum);
             // fixed polarity below (there was a double negative sign before)
-            pickupEndPos = new Vector2d(pickupPos.x, pickupPos.y + 1.4 * Params.HALF_MAT * Math.signum(pickupPos.y));
+            pickupEndPos = new Vector2d(pickupPos.x, pickupPos.y + 17.0 * leftOrRight);
 
             // action for picking up artifacts
             Action actMoveToPickup = drive.actionBuilder(drive.localizer.getPose())
@@ -119,13 +126,13 @@ public class AutoNearBlueGate26 extends LinearOpMode {
             // open gate after pickup first row of artifacts
             if (pickupIndex == 0) {
                 Vector2d gatePose1 = new Vector2d(5.0, drive.localizer.getPose().position.y);
-                Vector2d gatePose2 = new Vector2d(gatePose1.x, gatePose1.y + leftOrRight * 8.5);
+                Vector2d gatePose2 = new Vector2d(gatePose1.x, gatePose1.y + leftOrRight * 9.0);
                 Action openGateAct = drive.actionBuilder(drive.localizer.getPose())
                         .strafeToConstantHeading(gatePose1) // move to the gate
                         .strafeToConstantHeading(gatePose2) // open the gate
                         .build();
                 Actions.runBlocking(openGateAct); // complete pickup artifacts
-                sleep(1000); // let artifacts off
+                sleep(1000); // let artifacts get off
             }
 
             // only need to go back a little bit for row 2nd and 3rd
@@ -133,17 +140,12 @@ public class AutoNearBlueGate26 extends LinearOpMode {
                 // after pickup, need to go back a bit to avoid obstacles from other rows
                 Action actMoveBack;
                 actMoveBack = drive.actionBuilder(drive.localizer.getPose())
-                        // reverse intake to get rid of last artifacts if it is still not picked up
-                        // this is for the case that there is additional artifact has been in the robot
-                        // which is failed to shoot out.
-                        //.afterTime(0.01, new revertIntakeAction())
                         .strafeToConstantHeading(pickupPos)
                         .build();
                 Actions.runBlocking(actMoveBack);
             }
 
             Action actMoveToLaunch = drive.actionBuilder(drive.localizer.getPose())
-                    //.afterTime(0.01, new revertIntakeAction())
                     .afterTime(0.3, new startLauncherAction()) // start launcher motor
                     .strafeToLinearHeading(shootPos, shootHeading)
                     .build();
@@ -173,7 +175,7 @@ public class AutoNearBlueGate26 extends LinearOpMode {
         // start launcher motor if it has not been launched
         if (motors.getLauncherPower() < 0.4) {
             Logging.log("start launcher motor since it is stopped.");
-            motors.startLauncher();
+            motors.startLaunchNear();
             reachTargetVelocity(targetV, rampUpTime); // waiting time for launcher motor ramp up
         }
 
@@ -185,7 +187,7 @@ public class AutoNearBlueGate26 extends LinearOpMode {
 
 
         // starting shoot 2nd one
-        targetV = motors.launchSpeedNear - 4;
+        targetV -= 5;
         motors.startIntake(); // start intake motor to move 3rd artifacts into launcher
         reachTargetVelocity(targetV, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen(); // shoot second
@@ -195,7 +197,7 @@ public class AutoNearBlueGate26 extends LinearOpMode {
         motors.triggerClose();
 
         // starting shoot third one
-        targetV = motors.launchSpeedNear - 5;
+        targetV -= 5;
         reachTargetVelocity(targetV, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen(); // shoot third
         Logging.log("launcher velocity for #3 one: %f.", motors.getLaunchVelocity());
@@ -205,8 +207,8 @@ public class AutoNearBlueGate26 extends LinearOpMode {
     // function that chooses the right row based on detected pattern, returns a Vector2d
     private Vector2d rowChoose(double rownumber) {
         return new Vector2d(
-                (-rownumber * 2 + 3) * Params.HALF_MAT - (rownumber - 1) / 2.0, // add additional inch according to testing.
-                leftOrRight * (2.2 * Params.HALF_MAT + Params.CHASSIS_HALF_LENGTH / 2)
+                (-rownumber * 2 + 3) * Params.HALF_MAT, // add additional inch according to testing.
+                leftOrRight * (2.6 * Params.HALF_MAT)
         );
     }
 
@@ -235,7 +237,7 @@ public class AutoNearBlueGate26 extends LinearOpMode {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             Logging.log("start launcher motor.");
-            motors.startLauncher();
+            motors.startLaunchNear();
             return false;
         }
     }

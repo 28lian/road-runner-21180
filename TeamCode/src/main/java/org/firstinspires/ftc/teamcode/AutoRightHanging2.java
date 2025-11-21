@@ -128,7 +128,6 @@ public class AutoRightHanging2 extends LinearOpMode {
         Params.imuReseted = true;
         double imu_heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
-        Params.startPose = newStartPose; // init storage pose.
         Params.currentPose = newStartPose;; // init storage pose
 
         intake = new intakeUnit(hardwareMap, "Arm", "Wrist", "Knuckle","Finger");
@@ -484,7 +483,7 @@ public class AutoRightHanging2 extends LinearOpMode {
         if (Math.abs(shiftDelta) > 0.2) {
             Actions.runBlocking(
                     drv.actionBuilder(drv.localizer.getPose())
-                            .strafeToLinearHeading(new Vector2d(drv.localizer.getPose().position.x + shiftDelta, drv.localizer.getPose().position.y), Params.startPose.heading) // adjust heading also.
+                            .strafeToLinearHeading(new Vector2d(drv.localizer.getPose().position.x + shiftDelta, drv.localizer.getPose().position.y), Params.currentPose.heading) // adjust heading also.
                             .build()
             );
             //Logging.log(" After adjust: X position = %2f, Y position = %2f , heading = %sf", drv.pose.position.x, drv.pose.position.y, Math.toDegrees(drv.pose.heading.log()));

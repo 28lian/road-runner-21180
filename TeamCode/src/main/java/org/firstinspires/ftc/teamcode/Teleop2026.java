@@ -32,10 +32,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import java.util.List;
 
@@ -73,6 +70,7 @@ public class Teleop2026 extends LinearOpMode {
     //claw and arm unit
     private intakeUnit2026 motors;
 
+    boolean farShoot = false;
     boolean debugFlag = true;
     GamePadButtons2026 gpButtons = new GamePadButtons2026();
 
@@ -156,25 +154,9 @@ public class Teleop2026 extends LinearOpMode {
             ));
             drive.updatePoseEstimate(); // update dire pose.
 
-//            if (gpButtons.alignShootPosNear) {
-//                Actions.runBlocking(
-//                        drive.actionBuilder(new AutoTest().newStartPose)
-//                                .strafeToLinearHeading(new AutoTest().shootPos.position, new AutoTest().shootPos.heading)
-//                                .build()
-//                );
-//            }
-//
-//            if (gpButtons.autoPark) {
-//                Actions.runBlocking(
-//                        drive.actionBuilder(new AutoTest().newStartPose)
-//                                .strafeToLinearHeading(new Vector2d(-4 * Params.HALF_MAT, 2 * Params.HALF_MAT), Math.toRadians(90))
-//                                .build()
-//                );
-//            }
-
             // launch actions
             if (gpButtons.launch) {
-                motors.startLauncher();
+                motors.startLaunchNear();
             }
             if (gpButtons.launchOff) {
                 motors.stopLauncher();
@@ -183,10 +165,11 @@ public class Teleop2026 extends LinearOpMode {
             // in case there are 4 artifacts on robot.
             // shoot one out
             if (gpButtons.launchOneNear) {
-                int rampUpTime = 600;
+                farShoot = false;
+                int rampUpTime = 700;
                 int waitTimeForTriggerClose = 1000;
                 double launchVelocity = motors.launchSpeedNear;
-                motors.startLauncher();
+                motors.startLaunchNear();
                 motors.startIntake();
                 reachTargetVelocity(launchVelocity, rampUpTime);
                 motors.triggerOpen(); // shoot first
@@ -196,7 +179,8 @@ public class Teleop2026 extends LinearOpMode {
 
             // shoot one out for Far launching
             if (gpButtons.launchOneFar) {
-                int rampUpTime = 600;
+                farShoot = true;
+                int rampUpTime = 700;
                 int waitTimeForTriggerClose = 1000;
                 double launchVelocity = motors.launchSpeedFar;
                 motors.startLauncherFar();
@@ -239,16 +223,19 @@ public class Teleop2026 extends LinearOpMode {
 
             // near shooting
             if (gpButtons.launchArtifacts) {
+                farShoot =false;
                 shootArtifacts(false);
             }
 
             // far shooting
             if (gpButtons.launchArtifactsFar) {
+                farShoot = true;
                 shootArtifacts(true);
             }
 
             // move to far shoot position
             if (gpButtons.alignShootPosFar) {
+                farShoot = true;
                 Actions.runBlocking(
                         drive.actionBuilder(drive.localizer.getPose())
                                 .strafeToLinearHeading(shootPosFar.position, shootPosFar.heading)
@@ -258,9 +245,29 @@ public class Teleop2026 extends LinearOpMode {
 
             // move to near shoot position
             if (gpButtons.alignShootPosNear) {
+                farShoot = false;
                 Actions.runBlocking(
                         drive.actionBuilder(drive.localizer.getPose())
                                 .strafeToLinearHeading(shootPosNear, shootHeading)
+                                .build()
+                );
+            }
+
+            if (gpButtons.resetShootPos) {
+                if (farShoot) {
+                    shootPosFar = drive.localizer.getPose();
+                }
+                else
+                {
+                    shootPosNear = drive.localizer.getPose().position;
+                    shootHeading = drive.localizer.getPose().heading.toDouble();
+                }
+
+                // Move the robot a little bit to tell driver that the shoot Position has been updated.
+                Pose2d locP = drive.localizer.getPose();
+                Actions.runBlocking(
+                        drive.actionBuilder(drive.localizer.getPose())
+                                .strafeTo(new Vector2d(locP.position.x + 1.0, locP.position.y + 1.0))
                                 .build()
                 );
             }
@@ -341,7 +348,7 @@ public class Teleop2026 extends LinearOpMode {
             if (farLaunch) {
                 motors.startLauncherFar(); // far power
             } else {
-                motors.startLauncher(); // near
+                motors.startLaunchNear(); // near
             }
         }
         // launcher is started but with near launching power
@@ -363,7 +370,7 @@ public class Teleop2026 extends LinearOpMode {
         motors.triggerClose();
 
         // start shooting 3rd one
-        launchVelocity -= 1; // reduce a little bit.
+        launchVelocity -= 3; // reduce a little bit.
         reachTargetVelocity(launchVelocity, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen();  // shoot third
         checkingVelocityRampDown(waitTimeForTriggerClose);

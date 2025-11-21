@@ -38,9 +38,10 @@ import com.acmerobotics.roadrunner.Pose2d;
  */
 public class Params {
     // road runner
-    static Pose2d startPose = new Pose2d(0,0, Math.toRadians(180));
-    static Pose2d currentPose = new Pose2d(0,0,Math.toRadians(180));
     static int leftOrRight = 1;
+
+    static Pose2d currentPose = new Pose2d(0,0,Math.toRadians(180.0 + leftOrRight * 45.0));
+
     static boolean armCalibrated = false;
     static int blueOrRed = 1; // 1 for blue, -1 for red
 
@@ -52,7 +53,7 @@ public class Params {
 
     static int NO_CATION = 999999;
     //game field parameters
-    static final double HALF_MAT = 23.625/2.0;  // 60 cm. 11.8inch
+    static final double HALF_MAT = 23.75/2.0;  // 60 cm. 11.8inch
 
     // robot size
     static final double CHASSIS_HALF_WIDTH = 15.0 / 2.0;

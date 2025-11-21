@@ -164,6 +164,13 @@ public class PIDTune extends LinearOpMode {
                 d -= 0.001;
             }
 
+            if (gamepad1.back) {
+                motor.setVelocityPIDFCoefficients(p, 1.0, d, f);
+                pid = motor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+                Logging.log("p-i-d input p = %.5f, i = %.5f, d = %.5f, f = %.5f", pid.p, pid.i, pid.d, pid.f);
+
+            }
+
             telemetry.addData("target speed in degree", "= %.1f", vel);
 
             telemetry.addData("p-i-d input", "p = %.5f, i = %.5f, d = %.5f, f = %.5f", p, i, d, f);

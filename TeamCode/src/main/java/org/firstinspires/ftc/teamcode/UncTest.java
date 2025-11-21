@@ -163,7 +163,7 @@ public class UncTest extends LinearOpMode {
         double[] position = patternDetector.returnPosition();
         calibrateShootPosition(position);
         telemetry.update();
-        motors.startLauncher();
+        motors.startLaunchNear();
         sleep(2500);
         motors.stopLauncher();
     }
