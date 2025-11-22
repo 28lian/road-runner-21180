@@ -43,17 +43,18 @@ public final class Colored {
                 {
                     double x = fiducial.getTargetXDegrees();
                     double y = fiducial.getTargetYDegrees();
-                    return new double[]{x, y};
+                    double z = fiducial.getTargetArea();
+                    return new double[]{x, y, z};
                 }
                 else
                 {
-                    return new double[] {0, 0};
+                    return new double[] {0, 0, 0};
                 }
             }
         }
         else
         {
-            return new double[] {0, 0};
+            return new double[] {0, 0, 0};
         }
 
 //        double[] pythonOutputs = result.getPythonOutput();

@@ -25,9 +25,14 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -66,6 +71,8 @@ public class Teleop2026 extends LinearOpMode {
 
     // initialize limelight
     private Colored patternDetector;
+
+    double[] patternPos;
 
     //claw and arm unit
     private intakeUnit2026 motors;
@@ -110,10 +117,11 @@ public class Teleop2026 extends LinearOpMode {
 
         //preset positions used for teleop commands
         while (!isStarted()) {
-            double[] patternPos = patternDetector.returnPosition();
+            patternPos = patternDetector.returnPosition();
             if (patternPos.length >= 2) {
-                telemetry.addData("Pattern ", "X: %.1f Y: %.1f", patternPos[0], patternPos[1]);
-                telemetry.addData("LL", "%s", patternPos.toString());
+                for (int i = 0; i < patternPos.length; i++) {
+                    telemetry.addData("Pattern ", " Pos[%d] = %.5f", i, patternPos[i]);
+                }
             }
             else
             {
@@ -236,21 +244,78 @@ public class Teleop2026 extends LinearOpMode {
             // move to far shoot position
             if (gpButtons.alignShootPosFar) {
                 farShoot = true;
-                Actions.runBlocking(
-                        drive.actionBuilder(drive.localizer.getPose())
-                                .strafeToLinearHeading(shootPosFar.position, shootPosFar.heading)
-                                .build()
-                );
+
+                Pose2d locP = drive.localizer.getPose();
+                double correctionHeading = Math.toDegrees(locP.heading.toDouble() - shootPosFar.heading.toDouble());
+                double movingDistance = Math.abs(locP.position.x - shootPosFar.position.x) + Math.abs(locP.position.y - shootPosFar.position.y);
+
+                // make sure there is significant difference moving by roadrunner
+                if ((Math.abs(correctionHeading) > 2.0) || (movingDistance > 2.0)) {
+                    Actions.runBlocking(
+                            drive.actionBuilder(drive.localizer.getPose())
+                                    .strafeToLinearHeading(shootPosFar.position, shootPosFar.heading)
+                                    .build()
+                    );
+                }
+
+                detectPattern();
+                // make sure the april Tag has been detected and need to turn. Bigger than 1 degree
+                // moving according to area if pattern has detected.
+                if ((patternPos.length > 2) && (Math.abs(patternPos[0]) > 0.01)) {
+
+                    double correctAng = patternPos[0] - 1.0; // 1.0 degree to left. 
+                    // moving robot when there is significant difference.
+                    if (Math.abs(correctAng) > 1.0 /* degree*/)
+                    {
+                        TurnConstraints tc = new TurnConstraints(Math.PI/2, -Math.PI/2, Math.PI/2);
+                        Actions.runBlocking(
+                                drive.actionBuilder(drive.localizer.getPose())
+                                        .turn(-Math.toRadians(correctAng), tc)
+                                        .build()
+                        );
+                    }
+                }
             }
 
             // move to near shoot position
             if (gpButtons.alignShootPosNear) {
                 farShoot = false;
-                Actions.runBlocking(
-                        drive.actionBuilder(drive.localizer.getPose())
-                                .strafeToLinearHeading(shootPosNear, shootHeading)
-                                .build()
-                );
+                Pose2d locP = drive.localizer.getPose();
+                double correctionHeading = Math.toDegrees(locP.heading.toDouble() - shootHeading);
+                double movingDistance = Math.abs(locP.position.x - shootPosNear.x) + Math.abs(locP.position.y - shootPosNear.y);
+
+                // make sure there is significant difference moving by roadrunner
+                if ((Math.abs(correctionHeading) > 1.0) || (movingDistance > 1.0)) {
+                    Actions.runBlocking(
+                            drive.actionBuilder(drive.localizer.getPose())
+                                    .strafeToLinearHeading(shootPosNear, shootHeading)
+                                    .build()
+                    );
+                }
+
+                detectPattern();
+                // make sure the april Tag has been detected and need to turn. Bigger than 1 degree
+                // moving according to area if pattern has detected.
+                if ((patternPos.length > 2) && (Math.abs(patternPos[2]) > 0.001)) {
+                    double distance = 3000 * (0.013 - patternPos[2]);
+                    Vector2d locP1 = drive.localizer.getPose().position;
+                    double headingAng = drive.localizer.getPose().heading.toDouble();
+                    double newPosX = locP1.x - distance * Math.cos(headingAng);
+                    double newPosY = locP1.y - distance * Math.sin(headingAng);
+
+                    // moving robot when there is significant difference.
+                    if ((Math.abs(distance) > 2.0 /* inch */) || (Math.abs(patternPos[0]) > 2.0 /* degree*/)) {
+                        VelConstraint correctSpeed = (robotPose, _path, _disp) -> 30.0;
+
+                        Actions.runBlocking(
+                                drive.actionBuilder(drive.localizer.getPose())
+                                        .strafeToLinearHeading(
+                                                new Vector2d(newPosX, newPosY),
+                                                headingAng + Math.toRadians(-patternPos[0]), correctSpeed)
+                                        .build()
+                        );
+                    }
+                }
             }
 
             if (gpButtons.resetShootPos) {
@@ -308,17 +373,12 @@ public class Teleop2026 extends LinearOpMode {
                 telemetry.addData("launcher motor", "power = %.3f", motors.getLauncherPower());
                 telemetry.addData("launcher motor", "velocity = %.3f", motors.getLaunchVelocity());
 
-                /*
-                Logging.log("launcher motor velocity : %.1f. power = %.3f", motors.getLaunchVelocity(), motors.getLauncherPower());
-
-                double[] patternPos = patternDetector.returnPosition();
+                patternPos = patternDetector.returnPosition();
                 if (patternPos.length >= 2) {
-                    telemetry.addData("Pattern ", "X: %.1f Y: %.1f", patternPos[0], patternPos[1]);
-                } else {
-                    telemetry.addData("no pattern detected", 0);
+                    for (int i = 0; i < patternPos.length; i++) {
+                        telemetry.addData("Pattern ", " Pos[%d] = %.5f", i, patternPos[i]);
+                    }
                 }
-
-                 */
 
                 telemetry.addData("heading", " %.3f", Math.toDegrees(drive.localizer.getPose().heading.toDouble()));
                 telemetry.addData("location", " %s", drive.localizer.getPose().position.toString());
@@ -362,7 +422,7 @@ public class Teleop2026 extends LinearOpMode {
         motors.triggerClose(); //close trigger to wait launcher motor speed up after first launching
 
         // start shooting 2nd one
-        launchVelocity -= 4; // reduce a little bit.
+        launchVelocity -= 5; // reduce a little bit.
         motors.startIntake(); // start intake motor to move 3rd artifacts into launcher
         reachTargetVelocity(launchVelocity, waitTimeForTriggerOpen);// waiting time for launcher motor ramp up
         motors.triggerOpen(); // shoot second
@@ -370,7 +430,7 @@ public class Teleop2026 extends LinearOpMode {
         motors.triggerClose();
 
         // start shooting 3rd one
-        launchVelocity -= 3; // reduce a little bit.
+        launchVelocity -= 5; // reduce a little bit.
         reachTargetVelocity(launchVelocity, waitTimeForTriggerOpen); // waiting time for launcher motor ramp up
         motors.triggerOpen();  // shoot third
         checkingVelocityRampDown(waitTimeForTriggerClose);
@@ -436,5 +496,20 @@ public class Teleop2026 extends LinearOpMode {
             ));
         }
         Logging.log("Total waiting duration = %.2f", runtime.milliseconds() - startTime);
+    }
+
+    public void detectPattern() {
+        patternPos = patternDetector.returnPosition();
+        for (int i = 0; i < 30; i++) { // check for 30 cycles (~30 milliseconds) to detect pattern
+            patternPos = patternDetector.returnPosition();
+            Logging.log("pattern  = %f", patternPos[0]);
+            //telemetry.addData("limelight", "Detected Pattern = %f", detectedPattern);
+            //telemetry.update();
+            if ((patternPos.length > 1) && (Math.abs(patternPos[0]) > 0)) {
+                Logging.log("pattern  = %f", patternPos[0]);
+                return; // return when detected.
+            }
+            sleep(1);
+        }
     }
 }

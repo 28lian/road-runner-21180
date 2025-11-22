@@ -87,6 +87,8 @@ public class AutoNearBlueGate26 extends LinearOpMode {
                 //.turnTo(shootHeading) // turn to shooting direction
                 .strafeToLinearHeading(shootPos, shootHeading)
                 .build());
+        Params.currentPose = drive.localizer.getPose(); // save current position
+
         // shoot preload artifacts
         shootArtifacts();
 
@@ -97,6 +99,8 @@ public class AutoNearBlueGate26 extends LinearOpMode {
 
         // Loop to go through all 3 rows to pick up artifacts and shoot them
         for (int pickupIndex = 0; pickupIndex < 3; pickupIndex++) {
+            Params.currentPose = drive.localizer.getPose(); // save current position
+
             Vector2d pickupPos;
             Vector2d pickupEndPos;
             // 23 is the closest row to start position, then 22, then 21, so new if statement below will optimize pathing
@@ -112,6 +116,7 @@ public class AutoNearBlueGate26 extends LinearOpMode {
                     .strafeToLinearHeading(pickupPos, Math.toRadians(90.0 * leftOrRight))
                     .build();
             Actions.runBlocking(actMoveToPickup); // ready for pickup artifacts
+            Params.currentPose = drive.localizer.getPose(); // save current position
 
             // close launching trigger before pickup artifacts
             motors.stopLauncher();
@@ -122,6 +127,7 @@ public class AutoNearBlueGate26 extends LinearOpMode {
                     .strafeToConstantHeading(pickupEndPos, pickupSpeed) // picking up artifacts
                     .build();
             Actions.runBlocking(actIntake); // complete pickup artifacts
+            Params.currentPose = drive.localizer.getPose(); // save current position
 
             // open gate after pickup first row of artifacts
             if (pickupIndex == 0) {
@@ -132,6 +138,8 @@ public class AutoNearBlueGate26 extends LinearOpMode {
                         .strafeToConstantHeading(gatePose2) // open the gate
                         .build();
                 Actions.runBlocking(openGateAct); // complete pickup artifacts
+                Params.currentPose = drive.localizer.getPose(); // save current position
+
                 sleep(1000); // let artifacts get off
             }
 
@@ -143,6 +151,8 @@ public class AutoNearBlueGate26 extends LinearOpMode {
                         .strafeToConstantHeading(pickupPos)
                         .build();
                 Actions.runBlocking(actMoveBack);
+                Params.currentPose = drive.localizer.getPose(); // save current position
+
             }
 
             Action actMoveToLaunch = drive.actionBuilder(drive.localizer.getPose())
@@ -150,6 +160,8 @@ public class AutoNearBlueGate26 extends LinearOpMode {
                     .strafeToLinearHeading(shootPos, shootHeading)
                     .build();
             Actions.runBlocking(actMoveToLaunch);
+            Params.currentPose = drive.localizer.getPose(); // save current position
+
 
             // shoot picked up artifacts
             shootArtifacts();
@@ -162,6 +174,8 @@ public class AutoNearBlueGate26 extends LinearOpMode {
         Actions.runBlocking(drive.actionBuilder(drive.localizer.getPose())
                 .strafeToLinearHeading(new Vector2d(0, leftOrRight*3.8*Params.HALF_MAT), Math.toRadians(180))
                 .build());
+        Params.currentPose = drive.localizer.getPose(); // save current position
+
     }
 
     // function to shoot 3 artifacts
